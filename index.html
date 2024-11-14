@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FORUM</title>
+    <style>
+        /* シンプルなスタイル */
+        .record {
+            cursor: pointer;
+            margin: 5px 0;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+        }
+        .record-detail {
+            display: none;
+            margin-top: 5px;
+            padding-left: 10px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <h1>FORUM</h1>
+    <a href="https://cors-anywhere.herokuapp.com/corsdemo" target="_blank">CORS Anywhere - 使用する</a>
+    <div id="data"></div>
+
+    <script>
+        const apiToken = 'YSFFXJ49p4hVBku7476VCIVKw8RVAvV1QgL3OTqF';
+        const kintoneAppId = '12';
+        const kintoneDomain = 'gpr5qyqgpz3s.cybozu.com';
+        const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+        const kintoneApiUrl = `https://${kintoneDomain}/k/v1/records.json?app=${kintoneAppId}`;
+
+        async function fetchData() {
+            try {
+                const response = await fetch(proxyUrl + kintoneApiUrl, {
+                    headers: {
+                        'X-Cybozu-API-Token': apiToken
+                    }
+                });
+                const data = await response.json();
+                displayData(data.records);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        function displayData(records) {
+            const dataContainer = document.getElementById('data');
+            dataContainer.innerHTML = ''; // データの初期化
+            records.forEach((record, index) => {
+                // レコードをクリック可能な要素にする
+                const recordElement = document.createElement('div');
+                recordElement.className = 'record';
+                recordElement.textContent = `レコード ${index + 1} - ${record['文字列__1行_'].value}`; // 名前などのフィールドを表示
+
+                // 詳細表示の要素
+                const detailElement = document.createElement('div');
+                detailElement.className = 'record-detail';
+                detailElement.innerHTML = `
+                    <p>レコード番号: ${record['レコード番号'].value}</p>
+                    <p>作成者: ${record['作成者'].value.name}</p>
+                    <p>作成日時: ${record['作成日時'].value}</p>
+                    <p>更新日時: ${record['更新日時'].value}</p>
+                    <p>内容: ${record['文字列__1行_'].value}</p>
+                `;
+
+                // クリックで詳細表示/非表示を切り替え
+                recordElement.addEventListener('click', () => {
+                    detailElement.style.display = detailElement.style.display === 'none' ? 'block' : 'none';
+                });
+
+                // レコードと詳細を追加
+                dataContainer.appendChild(recordElement);
+                dataContainer.appendChild(detailElement);
+            });
+        }
+
+        fetchData();
+    </script>
+</body>
+</html>
