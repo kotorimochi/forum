@@ -1,0 +1,32 @@
+name: Fetch Kintone Data  # ワークフローの名前を定義
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # 定期実行。毎時0分に実行されるように設定
+  workflow_dispatch:      # 手動実行のトリガー
+
+jobs:
+  fetch-data:
+    runs-on: ubuntu-latest  # Ubuntu環境で実行
+
+    steps:
+      - name: チェックアウト
+        uses: actions/checkout@v2  # リポジトリのコードを読み込む
+
+      - name: データ取得
+        env:
+          KINTONE_API_TOKEN: ${{ secrets.KINTONE_API_TOKEN }}  # セキュリティ上のAPIトークン
+        run: |
+          # Kintoneからデータを取得し、dataフォルダにJSONファイルとして保存
+          curl -H "X-Cybozu-API-Token: $KINTONE_API_TOKEN" \
+               -X GET "https://gpr5qyqgpz3s.cybozu.com/k/v1/records.json?app=12" \
+               -o data/kintone_data.json
+
+      - name: GitHub Pagesに反映
+        run: |
+          # ファイルの変更をGitHubに反映
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/kintone_data.json
+          git commit -m "Update Kintone data"
+          git push
