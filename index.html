@@ -68,9 +68,18 @@
                 Object.keys(record).forEach(fieldKey => {
                     if (visibleFields.includes(fieldKey)) {
                         const fieldValue = record[fieldKey]?.value ?? '値なし';
-                        const fieldElement = document.createElement('p');
-                        fieldElement.textContent = `${fieldKey}: ${fieldValue}`;
-                        detailElement.appendChild(fieldElement);
+                        
+                        if (fieldKey === "内容_リッチ") {
+                            // リッチテキストの場合はHTMLを描画
+                            const richFieldElement = document.createElement('div');
+                            richFieldElement.innerHTML = `<strong>${fieldKey}:</strong> ${fieldValue}`;
+                            detailElement.appendChild(richFieldElement);
+                        } else {
+                            // 通常のテキストフィールドを表示
+                            const fieldElement = document.createElement('p');
+                            fieldElement.textContent = `${fieldKey}: ${fieldValue}`;
+                            detailElement.appendChild(fieldElement);
+                        }
                     }
                 });
 
