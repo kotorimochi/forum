@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FORUM By KINTONE</title>
     <style>
+        /* シンプルなスタイル */
         .record {
             cursor: pointer;
             margin: 5px 0;
@@ -32,6 +33,9 @@
         const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
         const kintoneApiUrl = `https://${kintoneDomain}/k/v1/records.json?app=${kintoneAppId}`;
 
+        // 表示したいフィールド名を指定
+        const visibleFields = ["タイトル", "内容", "対象期間", "内容_リッチ"];
+
         async function fetchData() {
             try {
                 const response = await fetch(proxyUrl + kintoneApiUrl, {
@@ -51,20 +55,23 @@
             dataContainer.innerHTML = ''; // データの初期化
             
             records.forEach((record, index) => {
+                // レコードをクリック可能な要素にする
                 const recordElement = document.createElement('div');
                 recordElement.className = 'record';
-                recordElement.textContent = `レコード ${index + 1}`;
+                recordElement.textContent = `レコード ${index + 1} - ${record['タイトル']?.value || "無題"}`; // タイトルフィールドを表示
 
                 // 詳細表示の要素
                 const detailElement = document.createElement('div');
                 detailElement.className = 'record-detail';
 
-                // レスポンスからフィールドを動的に取得して表示
+                // 必要なフィールドのみ表示
                 Object.keys(record).forEach(fieldKey => {
-                    const fieldValue = record[fieldKey]?.value ?? '値なし';
-                    const fieldElement = document.createElement('p');
-                    fieldElement.textContent = `${fieldKey}: ${fieldValue}`;
-                    detailElement.appendChild(fieldElement);
+                    if (visibleFields.includes(fieldKey)) {
+                        const fieldValue = record[fieldKey]?.value ?? '値なし';
+                        const fieldElement = document.createElement('p');
+                        fieldElement.textContent = `${fieldKey}: ${fieldValue}`;
+                        detailElement.appendChild(fieldElement);
+                    }
                 });
 
                 // クリックで詳細表示/非表示を切り替え
