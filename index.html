@@ -1,43 +1,100 @@
-function displayData(records) {
-    const dataContainer = document.getElementById('data');
-    dataContainer.innerHTML = ''; // データの初期化
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FORUM By KINTONE</title>
+    <style>
+        /* シンプルなスタイル */
+        .record {
+            cursor: pointer;
+            margin: 5px 0;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+        }
+        .record-detail {
+            display: none;
+            margin-top: 5px;
+            padding-left: 10px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <h1>メンテナンス中</h1>
+    <a href="https://cors-anywhere.herokuapp.com/corsdemo" target="_blank">CORS Anywhere - 使用する</a>
+    <div id="data"></div>
 
-    records.forEach((record, index) => {
-        const recordElement = document.createElement('div');
-        recordElement.className = 'record';
-        recordElement.textContent = `レコード ${index + 1}`;
+    <script>
+        const apiToken = 'YSFFXJ49p4hVBku7476VCIVKw8RVAvV1QgL3OTqF';
+        const kintoneAppId = '12';
+        const kintoneDomain = 'gpr5qyqgpz3s.cybozu.com';
+        const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+        const kintoneApiUrl = `https://${kintoneDomain}/k/v1/records.json?app=${kintoneAppId}`;
 
-        const detailElement = document.createElement('div');
-        detailElement.className = 'record-detail';
+        // 表示したいフィールド名を指定
+        const visibleFields = ["タイトル", "内容", "対象期間", "内容_リッチ"];
 
-        Object.keys(record).forEach(fieldKey => {
-            // 表示したくないフィールドをスキップ
-            const fieldsToSkip = ["更新者", "作成者", "更新日時", "作成日時"];
-            if (fieldsToSkip.includes(fieldKey)) {
-                return;
+        async function fetchData() {
+            try {
+                const response = await fetch(proxyUrl + kintoneApiUrl, {
+                    headers: {
+                        'X-Cybozu-API-Token': apiToken
+                    }
+                });
+                const data = await response.json();
+                displayData(data.records);
+            } catch (error) {
+                console.error('Error fetching data:', error);
             }
+        }
 
-            const fieldValue = record[fieldKey].value;
+        function displayData(records) {
+            const dataContainer = document.getElementById('data');
+            dataContainer.innerHTML = ''; // データの初期化
+            
+            records.forEach((record, index) => {
+                // レコードをクリック可能な要素にする
+                const recordElement = document.createElement('div');
+                recordElement.className = 'record';
+                recordElement.textContent = `レコード ${index + 1} - ${record['タイトル']?.value || "無題"}`; // タイトルフィールドを表示
 
-            // リッチテキストフィールドの処理
-            if (fieldKey === "内容_リッチ") {
-                const richFieldElement = document.createElement('div');
-                richFieldElement.innerHTML = `<strong>${fieldKey}:</strong> ${fieldValue}`;
-                detailElement.appendChild(richFieldElement);
-            } else {
-                const fieldElement = document.createElement('p');
-                fieldElement.textContent = `${fieldKey}: ${fieldValue}`;
-                detailElement.appendChild(fieldElement);
-            }
-        });
+                // 詳細表示の要素
+                const detailElement = document.createElement('div');
+                detailElement.className = 'record-detail';
 
-        // クリックで詳細表示/非表示を切り替え
-        recordElement.addEventListener('click', () => {
-            detailElement.style.display = detailElement.style.display === 'none' ? 'block' : 'none';
-        });
+                // 必要なフィールドのみ表示
+                Object.keys(record).forEach(fieldKey => {
+                    if (visibleFields.includes(fieldKey)) {
+                        const fieldValue = record[fieldKey]?.value ?? '値なし';
+                        
+                        if (fieldKey === "内容_リッチ") {
+                            // リッチテキストの場合はHTMLを描画
+                            const richFieldElement = document.createElement('div');
+                            richFieldElement.innerHTML = `<strong>${fieldKey}:</strong> ${fieldValue}`;
+                            detailElement.appendChild(richFieldElement);
+                        } else {
+                            // 通常のテキストフィールドを表示
+                            const fieldElement = document.createElement('p');
+                            fieldElement.textContent = `${fieldKey}: ${fieldValue}`;
+                            detailElement.appendChild(fieldElement);
+                        }
+                    }
+                });
 
-        // レコードと詳細を追加
-        dataContainer.appendChild(recordElement);
-        dataContainer.appendChild(detailElement);
-    });
-}
+                // クリックで詳細表示/非表示を切り替え
+                recordElement.addEventListener('click', () => {
+                    detailElement.style.display = detailElement.style.display === 'none' ? 'block' : 'none';
+                });
+
+                // レコードと詳細を追加
+                dataContainer.appendChild(recordElement);
+                dataContainer.appendChild(detailElement);
+            });
+        }
+
+        fetchData();
+    </script>
+</body>
+</html>
