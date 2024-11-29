@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FORUM By KINTONE</title>
     <style>
-        /* シンプルなスタイル */
         .record {
             cursor: pointer;
             margin: 5px 0;
@@ -50,22 +49,23 @@
         function displayData(records) {
             const dataContainer = document.getElementById('data');
             dataContainer.innerHTML = ''; // データの初期化
+            
             records.forEach((record, index) => {
-                // レコードをクリック可能な要素にする
                 const recordElement = document.createElement('div');
                 recordElement.className = 'record';
-                recordElement.textContent = `レコード ${index + 1} - ${record['文字列__1行_'].value}`; // 名前などのフィールドを表示
+                recordElement.textContent = `レコード ${index + 1}`;
 
                 // 詳細表示の要素
                 const detailElement = document.createElement('div');
                 detailElement.className = 'record-detail';
-                detailElement.innerHTML = `
-                    <p>レコード番号: ${record['レコード番号'].value}</p>
-                    <p>作成者: ${record['作成者'].value.name}</p>
-                    <p>作成日時: ${record['作成日時'].value}</p>
-                    <p>更新日時: ${record['更新日時'].value}</p>
-                    <p>内容: ${record['文字列__1行_'].value}</p>
-                `;
+
+                // レスポンスからフィールドを動的に取得して表示
+                Object.keys(record).forEach(fieldKey => {
+                    const fieldValue = record[fieldKey]?.value ?? '値なし';
+                    const fieldElement = document.createElement('p');
+                    fieldElement.textContent = `${fieldKey}: ${fieldValue}`;
+                    detailElement.appendChild(fieldElement);
+                });
 
                 // クリックで詳細表示/非表示を切り替え
                 recordElement.addEventListener('click', () => {
